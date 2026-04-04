@@ -1,8 +1,13 @@
-.welcome-container {
-  text-align: center;
-  margin-top: 50px;
+.text-primary-custom {
+  color: var(--primary-color);
 }
 
-h1 {
-  color: #007bff;
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }

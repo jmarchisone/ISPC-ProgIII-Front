@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 @Injectable({
@@ -8,6 +8,14 @@ import { Observable, tap } from 'rxjs';
 export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8000/api';
+  private getAuthHeaders() {
+  const token = localStorage.getItem('access_token');
+  return {
+    headers: new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    })
+  };
+}
 
   // Usamos un Signal para mantener el estado global del usuario
   currentUser = signal<any>(null);
@@ -53,5 +61,13 @@ export class AuthService {
     
     // Limpiamos el signal
     this.currentUser.set(null);
+  }
+
+  getUserData(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/me/`, this.getAuthHeaders());
+  }
+
+  changePassword(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password/`, data, this.getAuthHeaders());
   }
 }
