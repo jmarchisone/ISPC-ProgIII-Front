@@ -64,7 +64,7 @@ export class AuthService {
   }
 
   getUserData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/me/`, this.getAuthHeaders());
+    return this.http.get(`${this.apiUrl}/profile/`, this.getAuthHeaders());
   }
 
   changePassword(data: any): Observable<any> {
