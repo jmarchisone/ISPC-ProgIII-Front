@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 @Injectable({
@@ -8,14 +8,6 @@ import { Observable, tap } from 'rxjs';
 export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8000/api';
-  private getAuthHeaders() {
-  const token = localStorage.getItem('access_token');
-  return {
-    headers: new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    })
-  };
-}
 
   // Usamos un Signal para mantener el estado global del usuario
   currentUser = signal<any>(null);
@@ -33,6 +25,9 @@ export class AuthService {
       tap((res: any) => {
         if (res.access) {
           localStorage.setItem('access_token', res.access);
+          if (res.refresh) {
+            localStorage.setItem('refresh_token', res.refresh);
+          }
           localStorage.setItem('user', JSON.stringify(res.user));
           
           // Actualizamos el signal con la información del usuario
@@ -54,20 +49,37 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/password-reset-verify/`, data);
   }
 
+  refreshToken(): Observable<any> {
+    const refresh = localStorage.getItem('refresh_token');
+    return this.http.post(`${this.apiUrl}/token/refresh/`, { refresh }).pipe(
+      tap((res: any) => {
+        if (res.access) {
+          localStorage.setItem('access_token', res.access);
+          // Algunos backends rotan el refresh token, si viene uno nuevo, lo guardamos
+          if (res.refresh) {
+            localStorage.setItem('refresh_token', res.refresh);
+          }
+        }
+      })
+    );
+  }
+
   logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
     localStorage.removeItem('remember_me');
+    localStorage.removeItem('refresh_token');
+
     
     // Limpiamos el signal
     this.currentUser.set(null);
   }
 
   getUserData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/profile/`, this.getAuthHeaders());
+    return this.http.get(`${this.apiUrl}/profile/`);
   }
 
   changePassword(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/change-password/`, data, this.getAuthHeaders());
+    return this.http.post(`${this.apiUrl}/change-password/`, data);
   }
 }

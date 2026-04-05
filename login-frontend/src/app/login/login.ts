@@ -31,6 +31,13 @@ export class Login implements OnInit {
     if (savedUsername) {
       this.loginForm.patchValue({ username: savedUsername, rememberMe: true });
     }
+    const hasUserSignal = !!this.authService.currentUser();
+    const hasToken = !!localStorage.getItem('access_token');
+
+    if (hasUserSignal || hasToken) {
+      this.router.navigate(['/home']);
+      return;
+    }
   }
 
   get f() { return this.loginForm.controls; }
